@@ -13,7 +13,8 @@ def pitch_onset_features_to_DLNCO(f_peaks: dict,
                                   LN_maxfilterlength_seconds: float = 0.8,
                                   LN_maxfilterthresh: float = 0.1,
                                   DLNCO_filtercoef: np.ndarray = np.sqrt(1 / np.arange(1, 11)),
-                                  visualize=False) -> np.ndarray:
+                                  visualize=False,
+                                  use_chroma=True) -> np.ndarray:
     """Computes decaying locally adaptive normalized chroma onset (DLNCO) features from
     a dictionary of peaks obtained e.g. by ``audio_to_pitch_onset_features``.
 
@@ -66,14 +67,23 @@ def pitch_onset_features_to_DLNCO(f_peaks: dict,
     f_DLNCO : np.array [shape=(d_dlnco, N_dlnco)]
         Decaying Locally adaptively Normalized Chroma Onset features
     """
-    f_CO = np.zeros((feature_sequence_length, 12))
+    if use_chroma:
+        bin_count = 12
+    else:
+        bin_count = midi_max - midi_min + 1
+    
+    f_CO = np.zeros((feature_sequence_length, bin_count))
 
     for midi_pitch in range(midi_min, midi_max + 1):
         if midi_pitch not in f_peaks:
             continue
         time_peaks = f_peaks[midi_pitch][0, :] / 1000  # Now given in seconds
         val_peaks = np.log(f_peaks[midi_pitch][1, :] * log_compression_gamma + 1)
-        ind_chroma = np.mod(midi_pitch, 12)
+        if use_chroma:
+            ind_chroma = np.mod(midi_pitch, bin_count)
+        else:
+            ind_chroma = midi_pitch - midi_min
+        
         for k in range(time_peaks.size):
             indTime = __matlab_round(time_peaks[k] * feature_rate)  # Usage of "round" accounts
                                                          # "center window convention"
@@ -109,16 +119,16 @@ def pitch_onset_features_to_DLNCO(f_peaks: dict,
     # f_NCO = np.zeros((feature_sequence_length, 12))
 
     # Compute f_LNC0 (normalizing f_C0 using f_LN)
-    f_LNCO = np.zeros((feature_sequence_length, 12))
+    f_LNCO = np.zeros((feature_sequence_length, bin_count))
     for k in range(feature_sequence_length):
         # f_NCO[k, :] = f_CO[k, :] / (f_N[k]) #+ eps)
         f_LNCO[k, :] = f_CO[k, :] / f_LN[k]
 
     # Compute f_DLNCO
-    f_DLNCO = np.zeros((feature_sequence_length, 12))
+    f_DLNCO = np.zeros((feature_sequence_length, bin_count))
 
     num_coef = DLNCO_filtercoef.size
-    for p_idx in range(12):
+    for p_idx in range(bin_count):
         v_shift = np.array(f_LNCO[:, p_idx], copy=True)
         v_help = np.zeros((feature_sequence_length, num_coef))
 

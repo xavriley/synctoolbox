@@ -38,10 +38,10 @@ def sync_via_mrmsdtw_with_anchors(f_chroma1: np.ndarray,
 
         Parameters
         ----------
-        f_chroma1 : np.ndarray [shape=(12, N)]
+        f_chroma1 : np.ndarray
             Chroma feature matrix of the first sequence
 
-        f_chroma2 : np.ndarray [shape=(12, M)]
+        f_chroma2 : np.ndarray
             Chroma feature matrix of the second sequence
 
         f_onset1 : np.ndarray [shape=(L, N)]
@@ -240,10 +240,10 @@ def sync_via_mrmsdtw(f_chroma1: np.ndarray,
 
         Parameters
         ----------
-        f_chroma1 : np.ndarray [shape=(12, N)]
+        f_chroma1 : np.ndarray
             Chroma feature matrix of the first sequence
 
-        f_chroma2 : np.ndarray [shape=(12, M)]
+        f_chroma2 : np.ndarray
             Chroma feature matrix of the second sequence
 
         f_onset1 : np.ndarray [shape=(L, N)]
